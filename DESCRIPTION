@@ -1,11 +1,14 @@
 Package: namematcher
 Title: Evaluate Whether Two Names Describe the Same Person or Entity
 Version: 0.1.0
+Author: Rory Spanton <roryspantondata@gmail.com>
 Authors@R: person("Rory", "Spanton", email = "roryspantondata@gmail.com", role = c("aut", "cre"))
 Description: Evaluates whether two names describe the same person or entity.
 License: MIT + file LICENSE
+Maintainer: Rory Spanton <roryspantondata@gmail.com>
 URL: https://github.com/rorygoodwith/namematcher
 BugReports: https://github.com/rorygoodwith/namematcher/issues
 Depends:
     R (>= 4.0.0)
 Encoding: UTF-8
+Config/roxygen2/version: 8.1.0
