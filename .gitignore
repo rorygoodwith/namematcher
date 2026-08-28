@@ -47,3 +47,15 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Local agent config
+AGENTS.local.md
+
+# Rprofile
+.Rprofile
+inst/doc
+/doc/
+/Meta/
+
+# data
+/data/
