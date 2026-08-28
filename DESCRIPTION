@@ -12,3 +12,11 @@ Depends:
     R (>= 4.0.0)
 Encoding: UTF-8
 Config/roxygen2/version: 8.1.0
+Suggests:
+    readr (>= 2.2.0),
+    dplyr (>= 1.2.1),
+    stringdist (>= 0.9.17),
+    ggplot2 (>= 4.0.3),
+    rmarkdown (>= 2.3.1),
+    knitr
+VignetteBuilder: knitr
