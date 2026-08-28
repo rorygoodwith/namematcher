@@ -56,3 +56,6 @@ AGENTS.local.md
 inst/doc
 /doc/
 /Meta/
+
+# data
+/data/
