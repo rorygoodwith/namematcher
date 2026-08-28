@@ -12,7 +12,11 @@ get_ngrams <- function(string, n) {
 #' @param name_2 Character string
 #' @param n Integer length of character n-grams (default 2)
 #' @return Numeric scalar bounded [0, 1]
-get_js_divergence <- function(name_1, name_2, n = 2) {
+#' @export
+#' @examples
+#' js_divergence("Jon Smith", "John Smith")
+#' js_divergence("Jon Smith", "Elizabeth Howell")
+js_divergence <- function(name_1, name_2, n = 2) {
   if (!is.character(name_1) || !is.character(name_2)) {
     stop("name_1 and name_2 should be character vectors", call. = FALSE)
   }
@@ -47,7 +51,3 @@ get_js_divergence <- function(name_1, name_2, n = 2) {
   jsd <- 0.5 * get_kl_divergence(p, m) + 0.5 * get_kl_divergence(q, m)
   return(jsd)
 }
-
-# Example usage:
-get_js_divergence("Jon Smith", "John Smith", n = 2) # Low divergence (~0.2)
-get_js_divergence("Jon Smith", "Elizabeth Howell", n = 2) # High divergence (~0.9)

@@ -33,5 +33,6 @@ pak::pak("rorygoodwith/namematcher")
 
 ```{r example}
 library(namematcher)
-name_match()
+js_divergence("Jon Smith", "John Smith")
+js_divergence("Jon Smith", "Elizabeth Howell")
 ```
