@@ -1,0 +1,42 @@
+---
+title: "namematcher"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{namematcher}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In data cleaning, you may need to compare names from different data sources to determine whether they belong to the same person or entity. For example:
+
+- Establishing a person-level identifier across two data sources where names are given in different, unpredictable formats
+- Matching people to their emails, usernames, or other name variants
+
+The namematcher package provides tools for making these comparisons. This vignette introduces namematcher's first function, `js_divergence`, and demonstrates how it can be used in a basic workflow to infer name matches.
+
+## Evaluate name similarity with `js_divergence`
+
+The `js_divergence` function quantifies the token overlap between two names. In other words, to what extent are two names made up of different sub-components or parts?
+
+It achieves this comparison by: 
+1. Splitting the names into n-grams (slices of two letters, by default)
+2. Calculating the probability that each name includes each shared n-gram
+3. Calculating the Jensen-Shannon divergence on the mixture distribution of those probabilities
+
+`js_divergence` expresses the difference between two names as a double between 0 and 1. The higher the value, the more dissimilar the names are from one another, and therefore the less likely they are to refer to the same individual.
+
+### Basic use
+
+```{r setup}
+library(namematcher)
+
+js_divergence("jon cooper", "jonathan cooper")
+js_divergence("jon cooper", "joe collins")
+```
