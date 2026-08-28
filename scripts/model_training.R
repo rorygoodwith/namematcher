@@ -1,5 +1,4 @@
 library(namematcher)
-library(readr)
 library(dplyr)
 library(purrr)
 library(car)
@@ -7,13 +6,13 @@ library(stringdist)
 library(ggplot2)
 
 set.seed(123)
-source("R/features.R")
+source("R/js_divergence.R")
 
 FEATURE_NAMES <- c("jaro_winkler", "jensen_shannon")
 
 
 read_and_clean_data <- function(filepath = "data/DBLP10k.csv") {
-  df_names <- read_delim(filepath, delim = ";", show_col_types = FALSE)
+  df_names <- read.csv(filepath, sep = ";")
 
   df_non_exact_matches <- df_names |>
     filter(author1 != author2) |>
@@ -27,7 +26,7 @@ read_and_clean_data <- function(filepath = "data/DBLP10k.csv") {
   df_features$jensen_shannon <- map2_dbl(
     df_features$author1,
     df_features$author2,
-    get_js_divergence
+    js_divergence
   )
 
   df_features <- mutate(
