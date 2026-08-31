@@ -1,6 +1,5 @@
 library(namematcher)
 library(dplyr)
-library(purrr)
 library(car)
 library(stringdist)
 library(ggplot2)
@@ -21,18 +20,19 @@ read_and_clean_data <- function(filepath = "data/DBLP10k.csv") {
   df_features <- df_non_exact_matches |>
     mutate(
       jaro_winkler = stringdist::stringdist(author1, author2, method = "jw"),
-      levenshtein = stringdist::stringdist(author1, author2, method = "lv")
+      levenshtein = stringdist::stringdist(author1, author2, method = "lv"),
+      jensen_shannon = js_divergence(author1, author2),
+      sameentity = case_when(
+        sameentity == "t" ~ 1,
+        sameentity == "f" ~ 0,
+        .default = NA
+      )
     )
-  df_features$jensen_shannon <- map2_dbl(
-    df_features$author1,
-    df_features$author2,
-    js_divergence
-  )
 
   df_features <- mutate(
     df_features,
     across(
-      .cols = FEATURE_NAMES,
+      .cols = all_of(FEATURE_NAMES),
       .fns = ~ scale(.)[, 1]
     )
   )
@@ -55,9 +55,6 @@ train_test_split <- function(df) {
 
 
 train_model <- function(train) {
-  if (!is.data.frame(train)) {
-    stop("df must be of type data.frame")
-  }
   model <- glm(
     formula = "sameentity ~ jaro_winkler + jensen_shannon",
     family = binomial(link = "logit"),
@@ -96,8 +93,8 @@ test_model <- function(model, test) {
     nrow(test)
   results[["recall"]] <- sum(test$sameentity & test$predictions_bin) /
     sum(test$sameentity)
-  results[["precision"]] <- sum(!test$sameentity & !test$predictions_bin) /
-    sum(!test$sameentity)
+  results[["precision"]] <- sum(test$sameentity & test$predictions_bin) /
+    sum(test$predictions_bin)
 
   get_f1 <- function(precision, recall) {
     2 * ((precision * recall) / (precision + recall))
@@ -112,6 +109,8 @@ test_model <- function(model, test) {
 main <- function() {
   train_test_list <- read_and_clean_data() |>
     train_test_split()
+
+  train_test_list[["train"]]
 
   trained_model <- train_model(train_test_list[["train"]])
 

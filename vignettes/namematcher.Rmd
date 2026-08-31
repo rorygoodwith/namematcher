@@ -23,20 +23,46 @@ The namematcher package provides tools for making these comparisons. This vignet
 
 ## Evaluate name similarity with `js_divergence`
 
-The `js_divergence` function quantifies the token overlap between two names. In other words, to what extent are two names made up of different sub-components or parts?
+The `js_divergence` function quantifies the token overlap between pairs of names using the Jensen-Shannon Divergence. In other words, to what extent do two names have overlapping sub-components?
 
 It achieves this comparison by: 
 1. Splitting the names into n-grams (slices of two letters, by default)
-2. Calculating the probability that each name includes each shared n-gram
-3. Calculating the Jensen-Shannon divergence on the mixture distribution of those probabilities
+2. Getting n-grams shared by both names
+3. Calculating the probability that each name includes each shared n-gram
+4. Calculating the Jensen-Shannon Divergence on the mixture distribution of those probabilities
 
 `js_divergence` expresses the difference between two names as a double between 0 and 1. The higher the value, the more dissimilar the names are from one another, and therefore the less likely they are to refer to the same individual.
 
 ### Basic use
 
-```{r setup}
+`js_divergence` will return results character vectors of any length.
+
+```{r basic-use}
 library(namematcher)
 
-js_divergence("jon cooper", "jonathan cooper")
-js_divergence("jon cooper", "joe collins")
+# Evalute scalars. Returns 0: no divergence
+js_divergence("Jon Smith", "Jon Smith")
+
+# Calculates divergence pairwise across vectors
+js_divergence(
+  c("Jon Smith", "Elizabeth Howell"),
+  c("Jon B Smith", "Leanne Holmes")
+)
+```
+
+Because it handles vectors, it can be used in tidyverse syntax with ease. 
+
+Below are some real names taken from the (DBPL Dataset 2)[https://hpi.de/naumann/projects/repeatability/datasets/dblp-dataset.html], with the column `sameentity` recording whether the names in question truly are the same individual. Using mutate, we can calculate the js_divergence between the `name_1` and `name_2` columns in a pipe sequence. This shows low JSDs for pairs who truly are the same individual, and high JSDs for pairs who are not.
+
+```{r tidyverse-example}
+library(dplyr)
+
+sample_names <- tibble(
+  name_1 = c("Said Hassan Ahmed", "Marcelino Bicho Dos Santos", "Stephen Fung", "Patrice Caire", "Detlef Sass"), 
+  name_2 = c("Jagdish Chandra Patra", "Marcelino B. Santos", "Andrew E. Smith", "Kohtaro Ohba", "Detlef Saß"),
+  sameentity = c(FALSE, TRUE, FALSE, FALSE, TRUE)
+) |>
+  mutate(js_divergence = js_divergence(name_1, name_2))
+
+sample_names
 ```

@@ -2,14 +2,14 @@
 % Please edit documentation in R/js_divergence.R
 \name{js_divergence}
 \alias{js_divergence}
-\title{Calculate Jensen-Shannon Divergence based on character n-grams}
+\title{Jensen-Shannon Divergence for name similarity}
 \usage{
-js_divergence(name_1, name_2, n = 2)
+js_divergence(names_1, names_2, n = 2)
 }
 \arguments{
-\item{name_1}{Character string}
+\item{names_1}{Character vector TEST}
 
-\item{name_2}{Character string}
+\item{names_2}{Character vector}
 
 \item{n}{Integer length of character n-grams (default 2)}
 }
@@ -17,7 +17,9 @@ js_divergence(name_1, name_2, n = 2)
 Numeric scalar bounded [0, 1]
 }
 \description{
-Calculate Jensen-Shannon Divergence based on character n-grams
+Calculates the Jensen-Shannon Divergence (JSD) across two character vectors, `names_1` and `names_2`.
+Each element of the input vectors is split into n-grams, and the JSD is computed pairwise across the vectors.
+Lower values indicate less divergence between a pair of names, and therefore a greater chance that those names belong to the same individual or entity.
 }
 \examples{
 js_divergence("Jon Smith", "John Smith")
