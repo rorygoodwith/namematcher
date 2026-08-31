@@ -77,13 +77,6 @@ test_that("result is symmetric", {
   expect_equal(a, b)
 })
 
-test_that("n argument is respected", {
-  expect_equal(
-    js_divergence("Jon Smith", "John Smith", n = 3),
-    js_divergence("John Smith", "Jon Smith", n = 3)
-  )
-})
-
 test_that("result is bounded within [0, 1]", {
   set.seed(1)
   n1 <- replicate(
@@ -110,6 +103,14 @@ test_that("single character strings give length-derived results", {
 test_that("get_ngram_lists lowercases and strips spaces", {
   got <- get_ngram_lists("Jon Smith", 2)
   expect_equal(got[[1]], c("jo", "on", "ns", "sm", "mi", "it", "th"))
+})
+
+test_that("get_ngram_lists respects the n argument", {
+  got <- get_ngram_lists("Jon Smith", n = 3)
+  expect_equal(
+    got[[1]],
+    c("jon", "ons", "nsm", "smi", "mit", "ith")
+  )
 })
 
 test_that("get_ngram_lists returns whole string when shorter than n", {
