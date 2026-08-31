@@ -127,3 +127,44 @@ test_that("get_ngram_lists returns a list with one element per string", {
   expect_type(got, "list")
   expect_length(got, 2)
 })
+
+test_that("get_js_divergence is zero for identical distributions", {
+  p <- c(0.5, 0.5)
+  q <- c(0.5, 0.5)
+  m <- 0.5 * (p + q)
+  expect_equal(get_js_divergence(p, q, m), 0)
+})
+
+test_that("get_js_divergence is one for fully disjoint distributions", {
+  p <- c(1, 0)
+  q <- c(0, 1)
+  m <- 0.5 * (p + q)
+  expect_equal(get_js_divergence(p, q, m), 1)
+})
+
+test_that("get_js_divergence is symmetric in p and q", {
+  p <- c(0.9, 0.1)
+  q <- c(0.1, 0.9)
+  m <- 0.5 * (p + q)
+  expect_equal(
+    get_js_divergence(p, q, m),
+    get_js_divergence(q, p, m)
+  )
+})
+
+test_that("get_js_divergence is bounded in [0, 1]", {
+  p <- c(0.75, 0.25)
+  q <- c(0.25, 0.75)
+  m <- 0.5 * (p + q)
+  got <- get_js_divergence(p, q, m)
+  expect_true(got >= 0 && got <= 1)
+})
+
+test_that("get_js_divergence returns a numeric scalar", {
+  p <- c(0.6, 0.4)
+  q <- c(0.4, 0.6)
+  m <- 0.5 * (p + q)
+  got <- get_js_divergence(p, q, m)
+  expect_type(got, "double")
+  expect_length(got, 1)
+})

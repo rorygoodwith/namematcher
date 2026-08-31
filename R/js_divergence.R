@@ -12,6 +12,14 @@ get_ngram_lists <- function(strings, n) {
   mapply(get_ngrams, strings, lengths, MoreArgs = list(n = n), SIMPLIFY = FALSE)
 }
 
+get_js_divergence <- function(p, q, m) {
+  p_non_zero <- p > 0
+  q_non_zero <- q > 0
+  kl_div_pm <- sum(p[p_non_zero] * log2(p[p_non_zero] / m[p_non_zero]))
+  kl_div_qm <- sum(q[q_non_zero] * log2(q[q_non_zero] / m[q_non_zero]))
+  return(0.5 * (kl_div_pm + kl_div_qm))
+}
+
 #' Calculate Jensen-Shannon Divergence based on character n-grams
 #' @param names_1 Character vector
 #' @param names_2 Character vector
@@ -52,11 +60,7 @@ js_divergence <- function(names_1, names_2, n = 2) {
     # Create mixture distribution
     m <- 0.5 * (p + q)
 
-    get_kl_divergence <- function(p, q) {
-      non_zero <- p > 0
-      sum(p[non_zero] * log2(p[non_zero] / q[non_zero]))
-    }
-    return(0.5 * get_kl_divergence(p, m) + 0.5 * get_kl_divergence(q, m))
+    get_js_divergence(p, q, m)
   }
 
   js_divergences <- mapply(get_jsd_from_pair, ngrams_list_1, ngrams_list_2)
