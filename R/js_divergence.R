@@ -20,8 +20,13 @@ get_js_divergence <- function(p, q, m) {
   return(0.5 * (kl_div_pm + kl_div_qm))
 }
 
-#' Calculate Jensen-Shannon Divergence based on character n-grams
-#' @param names_1 Character vector
+#' Jensen-Shannon Divergence for name similarity
+#'
+#' Calculates the Jensen-Shannon Divergence (JSD) across two character vectors, `names_1` and `names_2`.
+#' Each element of the input vectors is split into n-grams, and the JSD is computed pairwise across the vectors.
+#' Lower values indicate less divergence between a pair of names, and therefore a greater chance that those names belong to the same individual or entity.
+#'
+#' @param names_1 Character vector TEST
 #' @param names_2 Character vector
 #' @param n Integer length of character n-grams (default 2)
 #' @return Numeric scalar bounded [0, 1]

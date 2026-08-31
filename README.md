@@ -22,10 +22,20 @@ pak::pak("rorygoodwith/namematcher")
 
 ## Basic Usage
 
+The package currently has one function, `js_divergence`, which measures
+how much subcomponents of two names overlap.
+
 ``` r
 library(namematcher)
-js_divergence("Jon Smith", "John Smith")
-#> [1] 0.1990067
-js_divergence("Jon Smith", "Elizabeth Howell")
-#> [1] 0.9016112
+
+# Evalute scalars. Returns 0: no divergence
+js_divergence("Jon Smith", "Jon Smith")
+#> [1] 0
+
+# Calculates divergence pairwise across vectors
+js_divergence(
+  c("Jon Smith", "Elizabeth Howell"),
+  c("Jon B Smith", "Leanne Holmes")
+)
+#> [1] 0.1990067 0.9196763
 ```
