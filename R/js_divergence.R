@@ -1,53 +1,65 @@
-get_ngrams <- function(string, n) {
-  string <- tolower(gsub(" ", "", string))
-  len <- nchar(string)
-  if (len < n) {
-    return(string)
+get_ngram_lists <- function(strings, n) {
+  strings <- tolower(gsub(" ", "", strings))
+  lengths <- nchar(strings)
+
+  get_ngrams <- function(string, length, n) {
+    if (length < n) {
+      return(string)
+    }
+    substring(tolower(string), 1:(length - n + 1), n:length)
   }
-  return(substring(tolower(string), 1:(len - n + 1), n:len))
+
+  mapply(get_ngrams, strings, lengths, MoreArgs = list(n = n), SIMPLIFY = FALSE)
 }
 
 #' Calculate Jensen-Shannon Divergence based on character n-grams
-#' @param name_1 Character string
-#' @param name_2 Character string
+#' @param names_1 Character vector
+#' @param names_2 Character vector
 #' @param n Integer length of character n-grams (default 2)
 #' @return Numeric scalar bounded [0, 1]
 #' @export
 #' @examples
 #' js_divergence("Jon Smith", "John Smith")
 #' js_divergence("Jon Smith", "Elizabeth Howell")
-js_divergence <- function(name_1, name_2, n = 2) {
-  if (!is.character(name_1) || !is.character(name_2)) {
-    stop("name_1 and name_2 should be character vectors", call. = FALSE)
+js_divergence <- function(names_1, names_2, n = 2) {
+  if (length(names_1) != length(names_2)) {
+    stop(
+      "names_1 and names_2 must be vectors of the same length",
+      call. = FALSE
+    )
   }
-  if (is.na(name_1) || is.na(name_2)) {
-    return(NA)
-  }
-  if (name_1 == name_2) {
-    return(0)
-  }
-
-  ngrams_1 <- get_ngrams(name_1, n)
-  ngrams_2 <- get_ngrams(name_2, n)
-
-  vocab <- unique(c(ngrams_1, ngrams_2))
-
-  # Probability vectors P and Q
-  p <- table(factor(ngrams_1, levels = vocab)) / length(ngrams_1)
-  q <- table(factor(ngrams_2, levels = vocab)) / length(ngrams_2)
-
-  # Convert table to numeric vectors
-  p <- as.numeric(p)
-  q <- as.numeric(q)
-
-  # Create mixture distribution
-  m <- 0.5 * (p + q)
-
-  get_kl_divergence <- function(x, y) {
-    nz <- x > 0
-    sum(x[nz] * log2(x[nz] / y[nz]))
+  if (!is.character(names_1) | !is.character(names_2)) {
+    stop("names_1 and names_2 must be character vectors", call. = FALSE)
   }
 
-  jsd <- 0.5 * get_kl_divergence(p, m) + 0.5 * get_kl_divergence(q, m)
-  return(jsd)
+  # Handle exact matches and missing values without computation
+  result <- rep(1, length(names_1))
+  result[(is.na(names_1) | is.na(names_2))] <- NA
+  result[(names_1 == names_2)] <- 0
+  to_compute <- which(!is.na(result) & result != 0)
+  if (length(to_compute) == 0) {
+    return(result)
+  }
+
+  ngrams_list_1 <- get_ngram_lists(names_1[to_compute], n)
+  ngrams_list_2 <- get_ngram_lists(names_2[to_compute], n)
+
+  get_jsd_from_pair <- function(ngrams_1, ngrams_2) {
+    intersection <- unique(c(ngrams_1, ngrams_2))
+    # Probability vectors P and Q
+    p <- table(factor(ngrams_1, levels = intersection)) / length(ngrams_1)
+    q <- table(factor(ngrams_2, levels = intersection)) / length(ngrams_2)
+    # Create mixture distribution
+    m <- 0.5 * (p + q)
+
+    get_kl_divergence <- function(p, q) {
+      non_zero <- p > 0
+      sum(p[non_zero] * log2(p[non_zero] / q[non_zero]))
+    }
+    return(0.5 * get_kl_divergence(p, m) + 0.5 * get_kl_divergence(q, m))
+  }
+
+  js_divergences <- mapply(get_jsd_from_pair, ngrams_list_1, ngrams_list_2)
+  result[to_compute] <- js_divergences
+  return(result)
 }
