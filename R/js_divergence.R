@@ -43,23 +43,46 @@ js_divergence <- function(names_1, names_2, n = 2) {
 
   ngrams_list_1 <- get_ngram_lists(names_1[to_compute], n)
   ngrams_list_2 <- get_ngram_lists(names_2[to_compute], n)
+  n_pairs <- length(ngrams_list_1)
 
-  get_jsd_from_pair <- function(ngrams_1, ngrams_2) {
-    intersection <- unique(c(ngrams_1, ngrams_2))
-    # Probability vectors P and Q
-    p <- table(factor(ngrams_1, levels = intersection)) / length(ngrams_1)
-    q <- table(factor(ngrams_2, levels = intersection)) / length(ngrams_2)
-    # Create mixture distribution
-    m <- 0.5 * (p + q)
+  lens_1 <- lengths(ngrams_list_1)
+  lens_2 <- lengths(ngrams_list_2)
+  pair_1 <- rep(seq_len(n_pairs), lens_1)
+  pair_2 <- rep(seq_len(n_pairs), lens_2)
+  tokens_1 <- unlist(ngrams_list_1, use.names = FALSE)
+  tokens_2 <- unlist(ngrams_list_2, use.names = FALSE)
 
-    get_kl_divergence <- function(p, q) {
-      non_zero <- p > 0
-      sum(p[non_zero] * log2(p[non_zero] / q[non_zero]))
-    }
-    return(0.5 * get_kl_divergence(p, m) + 0.5 * get_kl_divergence(q, m))
-  }
+  # Assign each (pair, n-gram) combination a global index in one pass across
+  # both members of every pair, so p and q share the same vocabulary per pair.
+  code_all <- as.integer(interaction(
+    c(pair_1, pair_2),
+    c(tokens_1, tokens_2),
+    drop = TRUE
+  ))
+  n_tokens_1 <- length(tokens_1)
+  code_1 <- code_all[seq_len(n_tokens_1)]
+  code_2 <- code_all[seq_len(length(code_all) - n_tokens_1) + n_tokens_1]
+  n_codes <- max(code_all)
 
-  js_divergences <- mapply(get_jsd_from_pair, ngrams_list_1, ngrams_list_2)
+  cnt_1 <- tabulate(code_1, nbins = n_codes)
+  cnt_2 <- tabulate(code_2, nbins = n_codes)
+
+  # Map each code back to the pair it belongs to; interaction orders levels by
+  # pair, so codes for each pair are contiguous within the per-pair vocabulary.
+  pair_of_code <- c(pair_1, pair_2)[match(seq_len(n_codes), code_all)]
+
+  p_code <- cnt_1 / lens_1[pair_of_code]
+  q_code <- cnt_2 / lens_2[pair_of_code]
+  m_code <- 0.5 * (p_code + q_code)
+
+  kl_1 <- p_code * log2(p_code / m_code)
+  kl_1[p_code == 0] <- 0
+  kl_2 <- q_code * log2(q_code / m_code)
+  kl_2[q_code == 0] <- 0
+
+  js_divergences <- as.numeric(
+    0.5 * rowsum(kl_1, pair_of_code) + 0.5 * rowsum(kl_2, pair_of_code)
+  )
   result[to_compute] <- js_divergences
   return(result)
 }
