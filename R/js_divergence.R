@@ -6,7 +6,7 @@ get_ngram_lists <- function(strings, n) {
     if (length < n) {
       return(string)
     }
-    substring(tolower(string), 1:(length - n + 1), n:length)
+    substring(string, 1:(length - n + 1), n:length)
   }
 
   mapply(get_ngrams, strings, lengths, MoreArgs = list(n = n), SIMPLIFY = FALSE)
