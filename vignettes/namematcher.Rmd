@@ -26,6 +26,7 @@ The namematcher package provides tools for making these comparisons. This vignet
 The `js_divergence` function quantifies the token overlap between pairs of names using the Jensen-Shannon Divergence. In other words, to what extent do two names have overlapping sub-components?
 
 It achieves this comparison by: 
+
 1. Splitting the names into n-grams (slices of two letters, by default)
 2. Getting n-grams shared by both names
 3. Calculating the probability that each name includes each shared n-gram
